@@ -17,10 +17,10 @@ export default function Photos() {
     <div className="pt-16">
       <section className="border-b border-border/50 bg-secondary/30 py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="font-display text-5xl font-bold text-foreground md:text-6xl">
+          <h1 className="font-display text-4xl font-bold text-foreground md:text-4xl">
             <span className="text-gold-gradient">Аксҳо</span>
           </h1>
-          <p className="ornament-divider mx-auto mt-4 text-2xl text-gold-gradient">✦</p>
+          <p className="ornament-divider mx-auto mt-4 text-xs text-gold-gradient">✦</p>
         </div>
       </section>
 
