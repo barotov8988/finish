@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { poems as initialPoems, type Poem } from "@/data/poems";
-import { Plus, Pencil, Trash2, Save, X, BookOpen, Image, Headphones, FileText, Upload, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, BookOpen, Image, Headphones, FileText, Upload } from "lucide-react";
 
 type Tab = "poems" | "books" | "photos" | "audiobooks";
 
