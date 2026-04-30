@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { poems as initialPoems, type Poem } from "@/data/poems";
-import { Plus, Pencil, Trash2, Save, X, BookOpen, Image, Headphones, FileText, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, BookOpen, Image, Headphones, FileText, Upload, Download } from "lucide-react";
 
 type Tab = "poems" | "books" | "photos" | "audiobooks";
 
-interface AudioFile {
+interface StoredAudioFile {
   id: number;
   title: string;
-  file: File;
+  fileData: string;
+  fileName: string;
+  mimeType: string;
   duration?: string;
   narrator?: string;
-  uploadedAt: Date;
+  uploadedAt: string;
 }
 
 export default function Admin() {
@@ -19,9 +21,26 @@ export default function Admin() {
   const [editing, setEditing] = useState<Poem | null>(null);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ line1: "", line2: "", line3: "", line4: "" });
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+  const [audioFiles, setAudioFiles] = useState<StoredAudioFile[]>([]);
   const [audioForm, setAudioForm] = useState({ title: "", narrator: "", duration: "" });
   const [selectedAudioFile, setSelectedAudioFile] = useState<File | null>(null);
+
+  // Load audiobooks from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("audiobooks");
+    if (saved) {
+      try {
+        setAudioFiles(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load audiobooks", e);
+      }
+    }
+  }, []);
+
+  // Save audiobooks to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("audiobooks", JSON.stringify(audioFiles));
+  }, [audioFiles]);
 
   const tabs: { key: Tab; label: string; icon: typeof BookOpen }[] = [
     { key: "poems", label: "Рубоиёт", icon: FileText },
@@ -75,18 +94,25 @@ export default function Admin() {
   const saveAudioFile = () => {
     if (!selectedAudioFile || !audioForm.title.trim()) return;
 
-    const newAudio: AudioFile = {
-      id: audioFiles.length > 0 ? Math.max(...audioFiles.map((a) => a.id)) + 1 : 1,
-      title: audioForm.title,
-      file: selectedAudioFile,
-      duration: audioForm.duration || undefined,
-      narrator: audioForm.narrator || undefined,
-      uploadedAt: new Date(),
-    };
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileData = e.target?.result as string;
+      const newAudio: StoredAudioFile = {
+        id: audioFiles.length > 0 ? Math.max(...audioFiles.map((a) => a.id)) + 1 : 1,
+        title: audioForm.title,
+        fileData: fileData,
+        fileName: selectedAudioFile.name,
+        mimeType: selectedAudioFile.type || "audio/mpeg",
+        duration: audioForm.duration || undefined,
+        narrator: audioForm.narrator || undefined,
+        uploadedAt: new Date().toISOString(),
+      };
 
-    setAudioFiles([...audioFiles, newAudio]);
-    setAudioForm({ title: "", narrator: "", duration: "" });
-    setSelectedAudioFile(null);
+      setAudioFiles([...audioFiles, newAudio]);
+      setAudioForm({ title: "", narrator: "", duration: "" });
+      setSelectedAudioFile(null);
+    };
+    reader.readAsDataURL(selectedAudioFile);
   };
 
   const deleteAudioFile = (id: number) => {
@@ -288,7 +314,7 @@ export default function Admin() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground truncate">{audio.title}</p>
                     {audio.narrator && <p className="text-xs text-muted-foreground">{audio.narrator}</p>}
-                    <p className="text-xs text-muted-foreground mt-1">Файл: {audio.file.name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Файл: {audio.fileName}</p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2 text-xs text-muted-foreground">
                     {audio.duration && <span>{audio.duration}</span>}
