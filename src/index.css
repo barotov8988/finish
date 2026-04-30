@@ -119,4 +119,10 @@
     height: 1px;
     background: linear-gradient(90deg, transparent, hsl(38 60% 55% / 0.5), transparent);
   }
+
+  .text-gold-gradient {
+    font-feature-settings: "case";
+    font-variant: normal;
+    letter-spacing: 0.02em;
+  }
 }
