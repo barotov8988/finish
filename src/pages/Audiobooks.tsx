@@ -1,32 +1,19 @@
 import { Play, Pause, Clock, Download } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-
-interface StoredAudioFile {
-  id: number;
-  title: string;
-  fileData: string;
-  fileName: string;
-  mimeType: string;
-  duration?: string;
-  narrator?: string;
-  uploadedAt: string;
-}
+import { getAllAudioFiles, getAudioFile, type StoredAudioFile } from "@/lib/audioStorage";
 
 export default function Audiobooks() {
   const [playing, setPlaying] = useState<number | null>(null);
   const [audiobooks, setAudiobooks] = useState<StoredAudioFile[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Load audiobooks from localStorage
+  // Load audiobooks from IndexedDB
   useEffect(() => {
-    const saved = localStorage.getItem("audiobooks");
-    if (saved) {
-      try {
-        setAudiobooks(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load audiobooks", e);
-      }
-    }
+    getAllAudioFiles().then((files) => {
+      setAudiobooks(files);
+    }).catch((e) => {
+      console.error("Failed to load audiobooks", e);
+    });
   }, []);
 
   const handlePlayPause = (id: number) => {
@@ -40,13 +27,23 @@ export default function Audiobooks() {
     }
   };
 
-  const handleDownload = (audio: StoredAudioFile) => {
-    const link = document.createElement("a");
-    link.href = audio.fileData;
-    link.download = audio.fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (audio: StoredAudioFile) => {
+    try {
+      const audioFile = await getAudioFile(audio.id);
+      if (audioFile?.fileBlob) {
+        const url = URL.createObjectURL(audioFile.fileBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = audio.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      console.error("Failed to download audio file", e);
+      alert("Хатога дар боргирифтани файл");
+    }
   };
 
   return (
@@ -96,10 +93,10 @@ export default function Audiobooks() {
                     </button>
                   </div>
 
-                  {playing === ab.id && (
+                  {playing === ab.id && ab.fileBlob && (
                     <audio
                       ref={audioRef}
-                      src={ab.fileData}
+                      src={URL.createObjectURL(ab.fileBlob)}
                       autoPlay
                       controls
                       className="hidden"

@@ -1,19 +1,9 @@
 import { useState, useEffect } from "react";
 import { poems as initialPoems, type Poem } from "@/data/poems";
 import { Plus, Pencil, Trash2, Save, X, BookOpen, Image, Headphones, FileText, Upload } from "lucide-react";
+import { saveAudioFile, getAllAudioFiles, deleteAudioFile, type StoredAudioFile } from "@/lib/audioStorage";
 
 type Tab = "poems" | "books" | "photos" | "audiobooks";
-
-interface StoredAudioFile {
-  id: number;
-  title: string;
-  fileData: string;
-  fileName: string;
-  mimeType: string;
-  duration?: string;
-  narrator?: string;
-  uploadedAt: string;
-}
 
 export default function Admin() {
   const [tab, setTab] = useState<Tab>("poems");
@@ -25,22 +15,14 @@ export default function Admin() {
   const [audioForm, setAudioForm] = useState({ title: "", narrator: "", duration: "" });
   const [selectedAudioFile, setSelectedAudioFile] = useState<File | null>(null);
 
-  // Load audiobooks from localStorage on mount
+  // Load audiobooks from IndexedDB on mount
   useEffect(() => {
-    const saved = localStorage.getItem("audiobooks");
-    if (saved) {
-      try {
-        setAudioFiles(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load audiobooks", e);
-      }
-    }
+    getAllAudioFiles().then((files) => {
+      setAudioFiles(files);
+    }).catch((e) => {
+      console.error("Failed to load audiobooks", e);
+    });
   }, []);
-
-  // Save audiobooks to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("audiobooks", JSON.stringify(audioFiles));
-  }, [audioFiles]);
 
   const tabs: { key: Tab; label: string; icon: typeof BookOpen }[] = [
     { key: "poems", label: "Рубоиёт", icon: FileText },
@@ -91,33 +73,38 @@ export default function Admin() {
     }
   };
 
-  const saveAudioFile = () => {
+  const handleSaveAudioFile = () => {
     if (!selectedAudioFile || !audioForm.title.trim()) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const fileData = e.target?.result as string;
-      const newAudio: StoredAudioFile = {
-        id: audioFiles.length > 0 ? Math.max(...audioFiles.map((a) => a.id)) + 1 : 1,
-        title: audioForm.title,
-        fileData: fileData,
-        fileName: selectedAudioFile.name,
-        mimeType: selectedAudioFile.type || "audio/mpeg",
-        duration: audioForm.duration || undefined,
-        narrator: audioForm.narrator || undefined,
-        uploadedAt: new Date().toISOString(),
-      };
+    const newAudio: StoredAudioFile = {
+      id: audioFiles.length > 0 ? Math.max(...audioFiles.map((a) => a.id)) + 1 : 1,
+      title: audioForm.title,
+      fileName: selectedAudioFile.name,
+      mimeType: selectedAudioFile.type || "audio/mpeg",
+      duration: audioForm.duration || undefined,
+      narrator: audioForm.narrator || undefined,
+      uploadedAt: new Date().toISOString(),
+      fileBlob: selectedAudioFile,
+    };
 
+    saveAudioFile(newAudio).then(() => {
       setAudioFiles([...audioFiles, newAudio]);
       setAudioForm({ title: "", narrator: "", duration: "" });
       setSelectedAudioFile(null);
-    };
-    reader.readAsDataURL(selectedAudioFile);
+    }).catch((e) => {
+      console.error("Failed to save audio file", e);
+      alert("Хатога дар сабт кардани файл");
+    });
   };
 
-  const deleteAudioFile = (id: number) => {
+  const handleDeleteAudioFile = (id: number) => {
     if (confirm("Оё мутмаин ҳастед?")) {
-      setAudioFiles(audioFiles.filter((a) => a.id !== id));
+      deleteAudioFile(id).then(() => {
+        setAudioFiles(audioFiles.filter((a) => a.id !== id));
+      }).catch((e) => {
+        console.error("Failed to delete audio file", e);
+        alert("Хатога дар ҳазф кардани файл");
+      });
     }
   };
 
@@ -293,7 +280,7 @@ export default function Admin() {
               </div>
               <div className="mt-4 flex gap-2">
                 <button
-                  onClick={saveAudioFile}
+                  onClick={handleSaveAudioFile}
                   className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   <Upload size={16} /> Илова кардан
@@ -319,7 +306,7 @@ export default function Admin() {
                   <div className="flex shrink-0 flex-col items-end gap-2 text-xs text-muted-foreground">
                     {audio.duration && <span>{audio.duration}</span>}
                     <button
-                      onClick={() => deleteAudioFile(audio.id)}
+                      onClick={() => handleDeleteAudioFile(audio.id)}
                       className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 size={14} />
