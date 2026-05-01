@@ -160,17 +160,24 @@ export default function Admin() {
                   {adding ? "Рубоии нав" : `Таҳрири рубоии №${editing?.id}`}
                 </h3>
                 <div className="space-y-3">
-                  {(["line1", "line2", "line3", "line4"] as const).map((key, i) => (
-                    <div key={key}>
-                      <label className="mb-1 block text-xs text-muted-foreground">Мисраи {i + 1}</label>
-                      <input
-                        value={form[key]}
-                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                        placeholder={`Мисраи ${i + 1}-ро ворид кунед...`}
-                      />
-                    </div>
-                  ))}
+                  <div>
+                    <label className="mb-2 block text-xs text-muted-foreground">Чор мисраи рубоӣ (ҳар мисра бар сатри нав)</label>
+                    <textarea
+                      value={`${form.line1}\n${form.line2}\n${form.line3}\n${form.line4}`.trim()}
+                      onChange={(e) => {
+                        const lines = e.target.value.split('\n');
+                        setForm({
+                          line1: lines[0] || "",
+                          line2: lines[1] || "",
+                          line3: lines[2] || "",
+                          line4: lines[3] || "",
+                        });
+                      }}
+                      rows={6}
+                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none resize-none"
+                      placeholder="Мисраи 1&#10;Мисраи 2&#10;Мисраи 3&#10;Мисраи 4"
+                    />
+                  </div>
                 </div>
                 <div className="mt-4 flex gap-2">
                   <button
