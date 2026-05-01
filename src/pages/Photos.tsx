@@ -18,7 +18,7 @@ export default function Photos() {
       <section className="border-b border-border/50 bg-secondary/30 py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="font-display text-4xl font-bold text-foreground md:text-4xl">
-            <span className="text-gold-gradient inline-block" style={{ fontVariantNumeric: "normal", lineHeight: "1" }}>Аксҳо</span>
+            <span className="text-gold-gradient inline-block" style={{ fontFamily: "'Palatino Linotype', 'Book Antiqua', serif", fontSize: "35px", fontVariantNumeric: "normal", lineHeight: "1" }}>Аксҳо</span>
           </h1>
           <p className="ornament-divider mx-auto mt-4 text-xs text-gold-gradient">✦</p>
         </div>
