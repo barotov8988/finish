@@ -8,7 +8,7 @@ export default function Biography() {
         <div className="container mx-auto px-4 text-center">
           <p className="text-xs tracking-widest text-primary/70 uppercase">Тарғиб ба таълим</p>
           <h1 className="font-display text-5xl md:text-6xl font-bold text-foreground mt-4">
-            <span className="text-gold-gradient">Тарҷумаи ҳол</span>
+            <span className="text-gold-gradient" style={{ fontFamily: "'Palatino Linotype', 'Book Antiqua', serif", fontSize: "20px" }}>Тарҷумаи ҳол</span>
           </h1>
           <div className="ornament-divider mx-auto mt-6 max-w-xs text-xs text-primary">✦</div>
           <p className="mt-6 text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
