@@ -30,7 +30,6 @@ export default function Biography() {
                   {/* Gold overlay accent */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/40 to-transparent p-6">
                     <h3 className="font-display text-xl font-bold text-foreground">Умари Хайём</h3>
-                    <p className="text-xs text-primary mt-1 font-medium">1048 – 1131</p>
                     <p className="text-xs text-muted-foreground mt-1">Нишопур, Хуросон</p>
                   </div>
                 </div>
